@@ -1,27 +1,35 @@
 import express from "express";
 import cors from "cors";
-import http from "http";
+import http  from "http";
 import { Server } from "socket.io";
-
 
 const app = express()
 app.use(cors())
 
 const server = http.createServer(app)
+app.get("/", (req, res) => res.send("Hello from server"))
 
 const io = new Server(server, {
     cors:{
-        origin: "*",
-        methods:["get", "post"]
+        origin: "http://localhost:5173",
+        methods:["GET", "POST"],
     }
 });
 
-io.on("connection", (Socket)=>{
-    console.log("A new user connected", Socket.id)
+io.on("connection", (socket)=>{
+    console.log("A new user connected", socket.id)
+// client message
+socket.on("client:",(data) => {
+    console.log("Message", data)
+    // reply
+    socket.emit("reply", `server received your message ${data}`)
 });
+//when server disconnected
 
-// when client sends message
-
+socket.on("disconnect", ()=>{
+    console.log("A user disconnected:", socket.id)
+});
+});
 
 
 const PORT = 5000;
